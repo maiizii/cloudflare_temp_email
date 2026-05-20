@@ -1,12 +1,9 @@
 name: Deploy Frontend with page function
 
 on:
-  workflow_run:
-    workflows: [Upstream Sync]
-    types: [completed]
   push:
-    tags:
-      - "*"
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
@@ -24,7 +21,7 @@ jobs:
             echo "has_config=false" >> $GITHUB_OUTPUT
           fi
         env:
-          PAGE_TOML: ${{ secrets.PAGE_TOML }}
+          PAGE_TOML: ${{ vars.PAGE_TOML }}
 
   deploy:
     needs: check
@@ -51,10 +48,11 @@ jobs:
           pnpm install --no-frozen-lockfile
           pnpm build:pages
           cd ../pages/
-          echo '${{ secrets.PAGE_TOML }}' > wrangler.toml
+          echo '${{ vars.PAGE_TOML }}' > wrangler.toml
           pnpm install --no-frozen-lockfile
           pnpm run deploy
           echo "Deploying production for ${{ github.ref_name }}"
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+

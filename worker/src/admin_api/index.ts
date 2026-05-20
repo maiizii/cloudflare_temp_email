@@ -13,6 +13,7 @@ import mail_webhook_settings from './mail_webhook_settings'
 import oauth2_settings from './oauth2_settings'
 import worker_config from './worker_config'
 import admin_mail_api from './admin_mail_api'
+import parsed_mail_api from '../mails_api/parsed_mail_api'
 import { sendMailbyAdmin, sendMailByBindingAdmin } from './send_mail'
 import db_api from './db_api'
 import ip_blacklist_settings from './ip_blacklist_settings'
@@ -32,6 +33,8 @@ api.post('/admin/address/:id/reset_password', address_api.resetPassword)
 
 // mail api
 api.get('/admin/mails', admin_mail_api.getMails)
+api.get('/admin/parsed_mails', parsed_mail_api.listAdminParsedMails)
+api.get('/admin/parsed_mail/:mail_id', parsed_mail_api.getAdminParsedMail)
 api.get('/admin/mails_unknow', admin_mail_api.getUnknowMails)
 api.delete('/admin/mails', admin_mail_api.clearMails)
 api.delete('/admin/mails/:id', admin_mail_api.deleteMail)

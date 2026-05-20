@@ -1,12 +1,9 @@
 name: Deploy Frontend
 
 on:
-  workflow_run:
-    workflows: [Upstream Sync]
-    types: [completed]
   push:
-    tags:
-      - "*"
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
@@ -31,9 +28,9 @@ jobs:
         if: ${{ env.FRONTEND_NAME != '' }}
         run: |
           cd frontend/
-          echo "${{ secrets.FRONTEND_ENV }}" > .env.prod
+          echo "${{ vars.FRONTEND_ENV }}" > .env.prod
           pnpm install --no-frozen-lockfile
-          export frontend_branch="${{ secrets.FRONTEND_BRANCH }}"
+          export frontend_branch="${{ vars.FRONTEND_BRANCH }}"
           if [ -n "$frontend_branch" ]; then
             echo "Deploying branch $frontend_branch"
             pnpm run deploy:actions --project-name=$FRONTEND_NAME --branch $frontend_branch
@@ -41,11 +38,11 @@ jobs:
             echo "Deploying branch production"
             pnpm run deploy --project-name=$FRONTEND_NAME
           fi
-          echo "Deployed for tag ${{ github.ref_name }}"
+          echo "Deployed for branch ${{ github.ref_name }}"
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          FRONTEND_NAME: ${{ secrets.FRONTEND_NAME }}
+          FRONTEND_NAME: ${{ vars.FRONTEND_NAME }}
 
   deploy-telegram-frontend:
     runs-on: ubuntu-latest
@@ -68,9 +65,9 @@ jobs:
         if: ${{ env.TG_FRONTEND_NAME != '' }}
         run: |
           cd frontend/
-          echo "${{ secrets.FRONTEND_ENV }}" > .env.prod
+          echo "${{ vars.FRONTEND_ENV }}" > .env.prod
           pnpm install --no-frozen-lockfile
-          export frontend_branch="${{ secrets.FRONTEND_BRANCH }}"
+          export frontend_branch="${{ vars.FRONTEND_BRANCH }}"
           if [ -n "$frontend_branch" ]; then
             echo "Deploying telegram mini app branch $frontend_branch"
             pnpm run deploy:actions:telegram --project-name=$TG_FRONTEND_NAME --branch $frontend_branch
@@ -82,4 +79,5 @@ jobs:
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          TG_FRONTEND_NAME: ${{ secrets.TG_FRONTEND_NAME }}
+          TG_FRONTEND_NAME: ${{ vars.TG_FRONTEND_NAME }}
+

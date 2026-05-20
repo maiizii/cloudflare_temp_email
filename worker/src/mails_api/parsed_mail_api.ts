@@ -38,6 +38,23 @@ const listParsedMails = async (c: Context<HonoCustomType>) => {
     return c.json({ results: parsed, count });
 };
 
+const listAdminParsedMails = async (c: Context<HonoCustomType>) => {
+    const { address, limit, offset } = c.req.query();
+    const addressQuery = address ? `address = ?` : "";
+    const addressParams = address ? [address] : [];
+    const filterQuerys = [addressQuery].filter((item) => item).join(" and ");
+    const finalQuery = filterQuerys.length > 0 ? `where ${filterQuerys}` : "";
+    const listRes = await handleMailListQuery(c,
+        `SELECT * FROM raw_mails ${finalQuery}`,
+        `SELECT count(*) as count FROM raw_mails ${finalQuery}`,
+        addressParams, limit, offset
+    );
+    if (listRes.status !== 200) return listRes;
+    const { results, count } = await listRes.json() as { results: Record<string, unknown>[], count: number };
+    const parsed = await Promise.all(results.map(toParsedMailRow));
+    return c.json({ results: parsed, count });
+};
+
 const getParsedMail = async (c: Context<HonoCustomType>) => {
     const { address } = c.get("jwtPayload");
     const { mail_id } = c.req.param();
@@ -49,4 +66,14 @@ const getParsedMail = async (c: Context<HonoCustomType>) => {
     return c.json(await toParsedMailRow(resolved as Record<string, unknown>));
 };
 
-export default { listParsedMails, getParsedMail };
+const getAdminParsedMail = async (c: Context<HonoCustomType>) => {
+    const { mail_id } = c.req.param();
+    const row = await c.env.DB.prepare(
+        `SELECT * FROM raw_mails where id = ?`
+    ).bind(mail_id).first();
+    if (!row) return c.json(null);
+    const resolved = await resolveRawEmailRow(row);
+    return c.json(await toParsedMailRow(resolved as Record<string, unknown>));
+};
+
+export default { listParsedMails, listAdminParsedMails, getParsedMail, getAdminParsedMail };
