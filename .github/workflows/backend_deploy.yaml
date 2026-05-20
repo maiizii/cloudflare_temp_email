@@ -51,13 +51,13 @@ jobs:
 
           cd worker/
           python - <<'PY'
-import os
-from pathlib import Path
+          import os
+          from pathlib import Path
 
-template = os.environ.get('WRANGLER_TOML_CONTENT', '')
-jwt_secret = os.environ.get('jwt_secret', '')
-content = template.replace('__JWT_SECRET__', jwt_secret)
-Path('wrangler.toml').write_text(content, encoding='utf-8')
+          template = os.environ.get('WRANGLER_TOML_CONTENT', '')
+          jwt_secret = os.environ.get('jwt_secret', '')
+          content = template.replace('__JWT_SECRET__', jwt_secret)
+          Path('wrangler.toml').write_text(content, encoding='utf-8')
 PY
 
           pnpm install --no-frozen-lockfile
